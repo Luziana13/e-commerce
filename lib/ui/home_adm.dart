@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:e_commerce/helpers/products_class.dart';
-import 'package:e_commerce/ui/cadastrar_Product.dart';
+import 'package:e_commerce/ui/delete_prod.dart';
 import 'package:flutter/material.dart';
 import '../helpers/user_class.dart';
 import 'package:dio/dio.dart';
@@ -35,11 +34,17 @@ class _HomeAdmState extends State<HomeAdm> {
   }
 
   void registerProduct(BuildContext context) async {
-    await Navigator.push(context,
-        MaterialPageRoute(builder: (context) => RegisterProduct(widget.user)));
+    //await Navigator.push(context,
+    //MaterialPageRoute(builder: (context) => RegisterProduct(widget.user)));
   }
 
-  void deleteProd(BuildContext context, Product prod) {}
+  void deleteProd(BuildContext context, Product prod) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => DeleteProduct(widget.user, prod)));
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
