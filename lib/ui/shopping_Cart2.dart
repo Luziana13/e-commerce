@@ -1,59 +1,38 @@
-import 'package:e_commerce/helpers/products_class.dart';
-import 'package:e_commerce/ui/shopping_Cart2.dart';
-import 'package:flutter/material.dart';
-import '../helpers/user_class.dart';
 import 'package:dio/dio.dart';
+import 'package:e_commerce/helpers/products_class.dart';
+import 'package:e_commerce/helpers/user_class.dart';
+import 'package:flutter/material.dart';
 
-class HomePage extends StatefulWidget {
+class Shopping_cart2 extends StatefulWidget {
   User user;
-  HomePage(this.user);
+  Product prod;
+  Shopping_cart2(this.user, this.prod);
   @override
-  _HomePageState createState() => _HomePageState();
+  _Shopping_cart createState() => _Shopping_cart();
 }
 
-class _HomePageState extends State<HomePage> {
+class _Shopping_cart extends State<Shopping_cart2> {
   List<Product> list = [];
   Response response;
   Dio dio = new Dio();
-  Future<List<Product>> listProducts() async {
+  var amount = 0;
+  Future<List<Product>> listPedidos() async {
     var _token = widget.user.token;
     response = await dio.get(
-        'https://restful-ecommerce-ufma.herokuapp.com/api/v1/products',
-        options: Options(headers: {"Authorization": _token}));
-
+        'https://restful-ecommerce-ufma.herokuapp.com/api/v1/cart',
+        options: Options(headers: {"Authorization": "Bearer " + _token}));
     if (response.data["success"] != true) {
       throw Exception("erro na requisição");
-    }
-
-    List<dynamic> lista = List<dynamic>.from(response.data["data"]);
-    list.clear();
-    for (var i in lista) {
-      list.add(Product.fromJson(i));
-    }
-    print(list.length);
-    return list;
-  }
-
-  void adicionarCarrinho(BuildContext context, Product prod) async {
-    final url = 'https://restful-ecommerce-ufma.herokuapp.com/api/v1/cart/add';
-    Map<String, dynamic> formData = {
-      'productId': prod.id,
-      'qty': 1,
-    };
-    try {
-      response = await dio.post(url,
-          options: Options(
-              headers: {"Authorization": "Bearer " + widget.user.token}),
-          data: formData);
-      if (response.data["success"] == true) {
-        await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => Shopping_cart2(widget.user, prod)));
+    } else {
+      amount = response.data["data"]["cartItem"]["totalAmount"];
+      List<dynamic> lista =
+          List<dynamic>.from(response.data["data"]["cartItem"]["items"]);
+      list.clear();
+      for (var i in lista) {
+        list.add(Product.fromJson(i));
       }
-    } on DioError catch (err) {
-      print(err);
     }
+    return list;
   }
 
   @override
@@ -66,13 +45,13 @@ class _HomePageState extends State<HomePage> {
           elevation: 0,
           centerTitle: true,
           title: Text(
-            "Produtos",
+            "Produtos no carrinho",
             style: TextStyle(
               color: Colors.white,
             ),
           )),
       body: FutureBuilder(
-          future: listProducts(),
+          future: listPedidos(),
           builder: (context, AsyncSnapshot<List<Product>> snapshot) {
             if (snapshot.hasError) {
               print(snapshot.hasError);
@@ -117,16 +96,6 @@ class _HomePageState extends State<HomePage> {
                                       fontWeight: FontWeight.normal,
                                     )),
                               ),
-                              Container(
-                                  alignment: Alignment.bottomRight,
-                                  child: FloatingActionButton(
-                                    onPressed: () {
-                                      adicionarCarrinho(context, e);
-                                    },
-                                    child: const Icon(Icons.add_shopping_cart),
-                                    mini: true,
-                                    backgroundColor: Colors.green,
-                                  )),
                             ],
                           ),
                         ),

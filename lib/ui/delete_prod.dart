@@ -14,14 +14,13 @@ class DeleteProduct extends StatefulWidget {
 
 class _DeleteProduct extends State<DeleteProduct> {
   Future<void> deleteProd(BuildContext context, Product prod) async {
-    Response response;
     var id = prod.id;
     print(id);
     var dio = Dio();
     final url =
         'https://restful-ecommerce-ufma.herokuapp.com/api/v1/products/$id';
     try {
-      response = await dio.delete(url,
+      await dio.delete(url,
           options: Options(
               headers: {"Authorization": "Bearer " + widget.user.token}));
 
