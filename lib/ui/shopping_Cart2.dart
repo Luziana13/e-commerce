@@ -35,6 +35,36 @@ class _Shopping_cart extends State<Shopping_cart2> {
     return list;
   }
 
+  Future<void> removerCard(Product prod) async {
+    var id = prod.id;
+    final url =
+        'https://restful-ecommerce-ufma.herokuapp.com/api/v1/cart/remove/$id';
+    try {
+      await dio.post(url,
+          options: Options(
+              headers: {"Authorization": "Bearer " + widget.user.token}));
+      setState(() {
+        list;
+      });
+    } catch (err) {
+      print(err);
+    }
+  }
+
+  Future<void> finalizarPedido() async {
+    final url = 'https://restful-ecommerce-ufma.herokuapp.com/api/v1/orders';
+    try {
+      await dio.post(url,
+          options: Options(
+              headers: {"Authorization": "Bearer " + widget.user.token}));
+      setState(() {
+        list;
+      });
+    } catch (err) {
+      print(err);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -50,64 +80,89 @@ class _Shopping_cart extends State<Shopping_cart2> {
               color: Colors.white,
             ),
           )),
-      body: FutureBuilder(
-          future: listPedidos(),
-          builder: (context, AsyncSnapshot<List<Product>> snapshot) {
-            if (snapshot.hasError) {
-              print(snapshot.hasError);
-              return Text("Erro");
-            }
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Column(
-                children: snapshot.data
-                    .map(
-                      (e) => Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey, width: 2),
-                          ),
-                          width: width,
-                          height: 150,
-                          child: Column(
-                            children: [
-                              Container(
-                                alignment: Alignment.topLeft,
-                                child: Text(e.title,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+      body: Column(children: [
+        FutureBuilder(
+            future: listPedidos(),
+            builder: (context, AsyncSnapshot<List<Product>> snapshot) {
+              if (snapshot.hasError) {
+                print(snapshot.hasError);
+                return Text("Erro");
+              }
+              if (snapshot.connectionState == ConnectionState.done) {
+                return Column(
+                  children: snapshot.data
+                      .map(
+                        (e) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey, width: 2),
+                            ),
+                            width: width,
+                            height: 150,
+                            child: Column(
+                              children: [
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(e.title,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                ),
+                                Container(
+                                  alignment: Alignment.topRight,
+                                  child: Text(e.price.toString(),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                ),
+                                Container(
+                                  alignment: Alignment.bottomLeft,
+                                  child: Text(e.description,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.normal,
+                                      )),
+                                ),
+                                Container(
+                                    alignment: Alignment.bottomRight,
+                                    child: FloatingActionButton(
+                                      onPressed: () {
+                                        removerCard(e);
+                                      },
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      mini: true,
+                                      backgroundColor: Colors.white,
                                     )),
-                              ),
-                              Container(
-                                alignment: Alignment.topRight,
-                                child: Text(e.price.toString(),
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                              ),
-                              Container(
-                                alignment: Alignment.bottomLeft,
-                                child: Text(e.description,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.normal,
-                                    )),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                    .toList(),
+                      )
+                      .toList(),
+                );
+              }
+              return Center(
+                child: CircularProgressIndicator(),
               );
-            }
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }),
+            }),
+        FloatingActionButton(
+          onPressed: () {
+            finalizarPedido();
+          },
+          child: const Icon(
+            Icons.add_box,
+            color: Colors.white,
+          ),
+          backgroundColor: Colors.blue,
+        )
+      ]),
     );
   }
 }
